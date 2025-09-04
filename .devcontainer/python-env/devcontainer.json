@@ -1,0 +1,20 @@
+{
+    "name": "Python Environment",
+    "build": {
+        "dockerfile": "../../.docker/python-env.Dockerfile",
+        "context": "../..",
+        "args": {
+            "WORKSPACE": "${containerWorkspaceFolder}"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.venvPath": "${VIRTUAL_ENV}"
+            },
+            "extensions": [
+                "ms-python.python"
+            ]
+        }
+    }
+}
