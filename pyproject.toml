@@ -1,0 +1,45 @@
+
+[tool.poetry]
+name = "data-cascade"
+version = "0.1.0"
+description = "Composable directory-based data cascade loader/saver with per-file origins and a convenient path/proxy API."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "data_cascade" }]
+license = "MIT"
+homepage = "https://example.com/data-cascade"
+repository = "https://example.com/data-cascade"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+# All handlers are optional at runtime; the package falls back when missing.
+# Users can choose one or more according to their needs.
+PyYAML = { version = "^6.0", optional = true }
+ruamel-yaml = { version = "^0.18.0", optional = true }
+tomli = { version = "^2.0.1", python = "<3.11", optional = true }
+tomli-w = { version = "^1.0.0", optional = true }
+toml = { version = "^0.10.2", optional = true }
+
+[tool.poetry.extras]
+yaml = ["PyYAML", "ruamel-yaml"]
+toml = ["tomli", "tomli-w", "toml"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+poethepoet = "^0.26.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+ruamel-yaml = "^0.18.15"
+
+[tool.poe.tasks]
+test = "pytest -q"
+pack = "python -c 'print(\"Use poetry build to create sdist/wheel.\")'"
+fmt = "python -c 'print(\"No formatter configured; add black/ruff if desired.\")'"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
