@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, MutableMapping
 
-from data_cascade.merge.strategy import (DictMode, ListMode, ListStrategy,
-                                         MergeStrategy)
+from data_cascade.merge.strategy import DictMode, ListMode, ListStrategy, MergeStrategy
 
 
 def merge_lists(a: list[Any], b: list[Any], strategy: ListStrategy) -> list[Any]:

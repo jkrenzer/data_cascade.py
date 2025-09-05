@@ -1,4 +1,3 @@
-
 [tool.poetry]
 name = "data-cascade"
 version = "0.1.0"
@@ -43,6 +42,17 @@ lint = "pylint --fail-under=7 data_cascade tests"
 [tool.poe.tasks.format-code]
 help = "Run all linters (black, isort, autoflake)."
 shell = "black ./ && isort ./ && autoflake -i -r ./"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["data_cascade"]
+
+[tool.autoflake]
 
 [build-system]
 requires = ["poetry-core"]

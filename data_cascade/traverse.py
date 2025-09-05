@@ -9,8 +9,7 @@ from .config import CONFIG_STEM, MAIN_STEM, SUPPORTED_EXTS_DEFAULT
 from .fs import list_dirs, list_files
 from .io import load_file
 from .logging_utils import get_logger
-from .mapping import (CascadeMap, KeyOrigin, KeyPath, enumerate_paths,
-                      merge_maps)
+from .mapping import CascadeMap, KeyOrigin, KeyPath, enumerate_paths, merge_maps
 from .merge.merge import deep_merge_dicts
 from .merge.strategy import MergeStrategy, extract_strategy_from_node
 

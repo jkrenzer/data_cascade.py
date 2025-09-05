@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from .config import SUPPORTED_EXTS_DEFAULT, ensure_dir
+
 # import handlers to register
 from .handlers import json  # noqa: F401
 from .handlers import toml  # noqa: F401
