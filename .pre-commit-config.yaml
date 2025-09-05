@@ -1,0 +1,47 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+ci:
+    skip: [pylint]
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-json
+    -   id: check-toml
+    -   id: check-added-large-files
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.1.0
+    hooks:
+        - id: black
+            # It is recommended to specify the latest version of Python
+            # supported by your project here, or alternatively use
+            # pre-commit's default_language_version, see
+            # https://pre-commit.com/#top_level-default_language_version
+          language_version: python3.12
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+-   repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
+    hooks:
+    -   id: autoflake
+        args: ["--in-place"]
+- repo: local
+  hooks:
+    - id: pylint
+      name: pylint
+      entry: pylint
+      language: system
+      types: [python]
+      require_serial: true
+      args:
+        [
+          "-rn", # Only display messages
+          "--fail-under=7.0", # Minimum score to pass
+        ]

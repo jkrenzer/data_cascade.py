@@ -30,11 +30,19 @@ poethepoet = "^0.26.0"
 black = "^25.1.0"
 isort = "^6.0.1"
 ruamel-yaml = "^0.18.15"
+autoflake = "^2.3.1"
+bump-my-version = "^1.2.1"
+pre-commit = "^4.3.0"
+pylint = "^3.3.8"
 
 [tool.poe.tasks]
 test = "pytest -q"
-pack = "python -c 'print(\"Use poetry build to create sdist/wheel.\")'"
-fmt = "python -c 'print(\"No formatter configured; add black/ruff if desired.\")'"
+pack = "poetry build"
+lint = "pylint --fail-under=7 data_cascade tests"
+
+[tool.poe.tasks.format-code]
+help = "Run all linters (black, isort, autoflake)."
+shell = "black ./ && isort ./ && autoflake -i -r ./"
 
 [build-system]
 requires = ["poetry-core"]
