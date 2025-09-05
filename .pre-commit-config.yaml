@@ -45,3 +45,7 @@ repos:
           "-rn", # Only display messages
           "--fail-under=7.0", # Minimum score to pass
         ]
+-   repo: https://github.com/jorisroovers/gitlint
+    rev:  v0.19.1
+    hooks:
+    -   id: gitlint
