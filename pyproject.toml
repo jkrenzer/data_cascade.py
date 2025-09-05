@@ -54,7 +54,7 @@ known_first_party = ["data_cascade"]
 
 [tool.autoflake]
 
-[tool.bump-my-version]
+[tool.bumpversion]
 current_version = "0.1.0"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
