@@ -1,15 +1,17 @@
-
 """Saving a cascade back to files using a CascadeMap."""
 
 from __future__ import annotations
-from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Optional, Set
-from .logging_utils import get_logger
-from .mapping import CascadeMap, KeyPath, KeyOrigin
-from .io import save_file
-from .registry import known_extensions, get_handler_for
 
-logger = get_logger("saver")
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
+from .handlers.registry import get_handler_for, known_extensions
+from .io import save_file
+from .logging_utils import get_logger
+from .mapping import CascadeMap, KeyOrigin, KeyPath
+
+log = get_logger(__name__)
+
 
 def _is_int(s: str) -> bool:
     try:
@@ -17,6 +19,7 @@ def _is_int(s: str) -> bool:
         return True
     except ValueError:
         return False
+
 
 def _get_at(data: Any, key_path: KeyPath, *, missing: object) -> Any:
     cur = data
@@ -39,10 +42,12 @@ def _get_at(data: Any, key_path: KeyPath, *, missing: object) -> Any:
             return missing
     return cur
 
+
 def _ensure_container(obj: Any, next_seg: str) -> Any:
     if obj is None:
         return [] if _is_int(next_seg) else {}
     return obj
+
 
 def _set_at_local(root: Any, local_path: KeyPath, value: Any) -> Any:
     if not local_path:
@@ -79,11 +84,13 @@ def _set_at_local(root: Any, local_path: KeyPath, value: Any) -> Any:
             raise TypeError("Cannot descend into scalar")
     return root
 
+
 def _choose_origin_for_key(file: Path, origins: List[KeyOrigin]) -> KeyOrigin:
     for o in origins:
         if o.file == file:
             return o
     return origins[0]
+
 
 def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap) -> Any:
     root_obj: Any = None
@@ -108,6 +115,7 @@ def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap)
         root_obj = {}
     return root_obj
 
+
 def _pick_default_write_path(root: Path) -> Path:
     for ext in (".yaml", ".yml", ".json", ".toml"):
         p = root / f"__main__{ext}"
@@ -117,8 +125,12 @@ def _pick_default_write_path(root: Path) -> Path:
     ext = known[0] if known else ".json"
     return root / f"__main__{ext}"
 
-def _assign_new_keys_to_files(root: Path, data: Dict[str, Any], cmap: CascadeMap) -> Dict[Path, List[Tuple[KeyPath, KeyPath]]]:
+
+def _assign_new_keys_to_files(
+    root: Path, data: Dict[str, Any], cmap: CascadeMap
+) -> Dict[Path, List[Tuple[KeyPath, KeyPath]]]:
     assignments: Dict[Path, List[Tuple[KeyPath, KeyPath]]] = {}
+
     def walk(obj: Any, base: KeyPath = ()) -> None:
         if isinstance(obj, dict):
             for k, v in obj.items():
@@ -138,16 +150,24 @@ def _assign_new_keys_to_files(root: Path, data: Dict[str, Any], cmap: CascadeMap
             if prefix in cmap.reverse:
                 origin = cmap.reverse[prefix][0]
                 file = origin.file
-                local = origin.local_path + kp[len(prefix):]
+                local = origin.local_path + kp[len(prefix) :]
             else:
                 default = _pick_default_write_path(root)
                 file = default
                 local = kp
             assignments.setdefault(file, []).append((kp, local))
+
     walk(data, ())
     return assignments
 
-def save_data_cascade(root: Path | str, data: Dict[str, Any], cmap: CascadeMap, *, target_files: Optional[Iterable[Path]] = None) -> None:
+
+def save_data_cascade(
+    root: Path | str,
+    data: Dict[str, Any],
+    cmap: CascadeMap,
+    *,
+    target_files: Optional[Iterable[Path]] = None,
+) -> None:
     root_path = Path(root)
     root_path.mkdir(parents=True, exist_ok=True)
 
@@ -173,9 +193,10 @@ def save_data_cascade(root: Path | str, data: Dict[str, Any], cmap: CascadeMap, 
                 obj = _set_at_local(obj, local, val)
             file.parent.mkdir(parents=True, exist_ok=True)
             save_file(file, obj)
-            logger.info("Saved %s", file)
+            log.info("Saved %s", file)
         except Exception as e:
-            logger.error("Failed to save %s: %s", file, e)
+            log.error("Failed to save %s: %s", file, e)
             raise
+
 
 __all__ = ["save_data_cascade"]

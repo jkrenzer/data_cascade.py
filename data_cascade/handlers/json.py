@@ -1,16 +1,20 @@
-
 """JSON handler using the Python standard library."""
 
 from __future__ import annotations
+
 import json
 from pathlib import Path
 from typing import Any, Sequence
-from .logging_utils import get_logger
+
+from ..logging_utils import get_logger
 from .registry import FileHandler, register_handler
 
-logger = get_logger("json")
+log = get_logger(__name__)
+
 
 class JsonHandler(FileHandler):
+    """Handler for JSON files."""
+
     def supported_exts(self) -> Sequence[str]:
         return (".json",)
 
@@ -25,5 +29,6 @@ class JsonHandler(FileHandler):
         with path.open("w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
+
 register_handler(JsonHandler())
-logger.debug("Registered JSON handler.")
+log.debug("Registered JSON handler.")

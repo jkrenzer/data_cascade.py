@@ -1,7 +1,9 @@
-
 from __future__ import annotations
+
 from pathlib import Path
+
 from data_cascade import load_data_cascade, save_data_cascade
+
 
 def test_preserve_directory_file_mapping(tmp_path: Path):
     root = tmp_path / "data"

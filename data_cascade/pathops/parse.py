@@ -1,9 +1,11 @@
-
 """Path parsing utilities for dotted and bracketed paths."""
+
 from __future__ import annotations
-from typing import Tuple, List
+
+from typing import List, Tuple
 
 KeyPath = Tuple[str, ...]
+
 
 def parse_path(expr: str) -> KeyPath:
     # Supports a.b[1].c and a."x.y"[2] and a["x.y"][2]
@@ -11,10 +13,12 @@ def parse_path(expr: str) -> KeyPath:
     n = len(expr)
     segs: List[str] = []
     buf: List[str] = []
+
     def flush_buf():
         if buf or not segs:
             segs.append("".join(buf))
             buf.clear()
+
     while i < n:
         ch = expr[i]
         if ch == ".":
@@ -50,7 +54,8 @@ def parse_path(expr: str) -> KeyPath:
             if i >= n:
                 raise ValueError("Unclosed [")
             if expr[i] in ("'", '"'):
-                quote = expr[i]; i += 1
+                quote = expr[i]
+                i += 1
                 qbuf: List[str] = []
                 while i < n and expr[i] != quote:
                     if expr[i] == "\\" and i + 1 < n:
@@ -81,6 +86,7 @@ def parse_path(expr: str) -> KeyPath:
     flush_buf()
     segs = [s for s in segs if s != ""]
     return tuple(segs)
+
 
 def join_path(*parts: KeyPath) -> KeyPath:
     out: List[str] = []

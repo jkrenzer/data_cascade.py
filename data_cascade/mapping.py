@@ -1,18 +1,20 @@
-
 """Origin mapping structures to enable saving back to files."""
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Tuple, Iterable, Any
+from typing import Any, Dict, Iterable, List, Tuple
 
 KeyPath = Tuple[str, ...]
 LocalPath = Tuple[str, ...]
+
 
 @dataclass(frozen=True)
 class KeyOrigin:
     file: Path
     local_path: LocalPath
+
 
 @dataclass
 class CascadeMap:
@@ -24,7 +26,9 @@ class CascadeMap:
         self.forward.setdefault(origin.file, set()).add(key_path)
 
     def drop_prefix(self, prefix: KeyPath) -> None:
-        to_drop = [kp for kp in list(self.reverse.keys()) if kp[: len(prefix)] == prefix]
+        to_drop = [
+            kp for kp in list(self.reverse.keys()) if kp[: len(prefix)] == prefix
+        ]
         for kp in to_drop:
             origins = self.reverse.pop(kp, [])
             for o in origins:
@@ -33,14 +37,18 @@ class CascadeMap:
                     if not self.forward[o.file]:
                         del self.forward[o.file]
 
+
 def merge_maps(a: CascadeMap, b: CascadeMap, *, prefix: KeyPath = ()) -> CascadeMap:
-    out = CascadeMap(forward={p: set(kps) for p, kps in a.forward.items()},
-                     reverse={kp: list(origins) for kp, origins in a.reverse.items()})
+    out = CascadeMap(
+        forward={p: set(kps) for p, kps in a.forward.items()},
+        reverse={kp: list(origins) for kp, origins in a.reverse.items()},
+    )
     for kp, origins in b.reverse.items():
         kp2 = prefix + kp
         for o in origins:
             out.add_origin(kp2, o)
     return out
+
 
 def enumerate_paths(obj: Any, base: KeyPath = ()) -> Iterable[KeyPath]:
     if isinstance(obj, dict):

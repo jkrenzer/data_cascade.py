@@ -1,10 +1,11 @@
-
 """Get/set/delete by parsed key paths."""
 
 from __future__ import annotations
+
 from typing import Any, Tuple
 
 KeyPath = Tuple[str, ...]
+
 
 def is_int_segment(s: str) -> bool:
     try:
@@ -12,6 +13,7 @@ def is_int_segment(s: str) -> bool:
         return True
     except ValueError:
         return False
+
 
 def get_at(obj: Any, key_path: KeyPath, *, missing: object = None) -> Any:
     cur = obj
@@ -34,10 +36,12 @@ def get_at(obj: Any, key_path: KeyPath, *, missing: object = None) -> Any:
             return missing
     return cur
 
+
 def _ensure_container(obj: Any, next_seg: str) -> Any:
     if obj is None:
         return [] if is_int_segment(next_seg) else {}
     return obj
+
 
 def set_at(obj: Any, key_path: KeyPath, value: Any) -> Any:
     if not key_path:
@@ -72,6 +76,7 @@ def set_at(obj: Any, key_path: KeyPath, value: Any) -> Any:
         else:
             raise TypeError("Cannot descend into scalar")
     return obj
+
 
 def delete_at(obj: Any, key_path: KeyPath) -> Any:
     if not key_path:

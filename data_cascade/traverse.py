@@ -1,23 +1,29 @@
-
 """Directory traversal and cascade assembly with origin mapping."""
 
 from __future__ import annotations
+
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Tuple
-from .config import SUPPORTED_EXTS_DEFAULT, MAIN_STEM, CONFIG_STEM
+
+from .config import CONFIG_STEM, MAIN_STEM, SUPPORTED_EXTS_DEFAULT
 from .fs import list_dirs, list_files
 from .io import load_file
 from .logging_utils import get_logger
-from .merge import MergeStrategy, deep_merge_dicts
-from .strategy import extract_strategy_from_node
-from .mapping import CascadeMap, KeyOrigin, KeyPath, merge_maps, enumerate_paths
+from .mapping import (CascadeMap, KeyOrigin, KeyPath, enumerate_paths,
+                      merge_maps)
+from .merge.merge import deep_merge_dicts
+from .merge.strategy import MergeStrategy, extract_strategy_from_node
 
-logger = get_logger("traverse")
+log = get_logger(__name__)
 
-def _assign_origins_for_subtree(base_path: KeyPath, content: Any, file_path: Path, cmap: CascadeMap) -> None:
+
+def _assign_origins_for_subtree(
+    base_path: KeyPath, content: Any, file_path: Path, cmap: CascadeMap
+) -> None:
     for rel_path in enumerate_paths(content):
         full: KeyPath = tuple(list(base_path) + list(rel_path))
         cmap.add_origin(full, KeyOrigin(file=file_path, local_path=rel_path))
+
 
 def load_directory_node(
     directory: Path,
@@ -35,35 +41,47 @@ def load_directory_node(
             try:
                 cfg_content = load_file(file_path) or {}
             except Exception as e:
-                logger.error("Failed to load config file %s: %s", file_path, e)
+                log.error("Failed to load config file %s: %s", file_path, e)
                 continue
             if isinstance(cfg_content, Mapping):
                 if dir_default_config and isinstance(dir_default_config, Mapping):
-                    merged_cfg = dict(dir_default_config); merged_cfg.update(cfg_content); dir_default_config = merged_cfg
+                    merged_cfg = dict(dir_default_config)
+                    merged_cfg.update(cfg_content)
+                    dir_default_config = merged_cfg
                 else:
                     dir_default_config = dict(cfg_content)
     if isinstance(dir_default_config, Mapping):
-        strategy = extract_strategy_from_node({"__config__": dir_default_config}, strategy)
+        strategy = extract_strategy_from_node(
+            {"__config__": dir_default_config}, strategy
+        )
 
     for file_path in list_files(directory, allowed_exts):
         stem = file_path.stem
         if stem == CONFIG_STEM:
             continue
         if stem in strategy.excludes:
-            logger.debug("Excluding stem %s due to strategy excludes", stem)
+            log.debug("Excluding stem %s due to strategy excludes", stem)
             continue
         try:
             content = load_file(file_path)
         except Exception as e:
-            logger.warning("Skipping file %s due to load error: %s", file_path, e)
+            log.warning("Skipping file %s due to load error: %s", file_path, e)
             continue
         if content is None:
             content = {}
-        if isinstance(content, Mapping) and dir_default_config and "__config__" not in content:
-            tmp = dict(content); tmp["__config__"] = dict(dir_default_config); content = tmp
+        if (
+            isinstance(content, Mapping)
+            and dir_default_config
+            and "__config__" not in content
+        ):
+            tmp = dict(content)
+            tmp["__config__"] = dict(dir_default_config)
+            content = tmp
         if stem == MAIN_STEM:
             if not isinstance(content, Mapping):
-                raise RuntimeError(f"{file_path} must contain a mapping for {MAIN_STEM}")
+                raise RuntimeError(
+                    f"{file_path} must contain a mapping for {MAIN_STEM}"
+                )
             node = deep_merge_dicts(node, content, strategy)
             _assign_origins_for_subtree((), content, file_path, cmap)
             continue
@@ -81,7 +99,7 @@ def load_directory_node(
         if child_key in (CONFIG_STEM, MAIN_STEM):
             continue
         if child_key in strategy.excludes:
-            logger.debug("Excluding directory %s due to strategy excludes", child_key)
+            log.debug("Excluding directory %s due to strategy excludes", child_key)
             continue
         child_node, child_map = load_directory_node(
             subdir,
@@ -89,8 +107,14 @@ def load_directory_node(
             inherited_default_config=dir_default_config,
             allowed_exts=allowed_exts,
         )
-        if child_key in node and isinstance(node[child_key], dict) and isinstance(child_node, dict):
-            node[child_key] = deep_merge_dicts(node[child_key], child_node, strategy.for_child(child_key))
+        if (
+            child_key in node
+            and isinstance(node[child_key], dict)
+            and isinstance(child_node, dict)
+        ):
+            node[child_key] = deep_merge_dicts(
+                node[child_key], child_node, strategy.for_child(child_key)
+            )
         else:
             node[child_key] = child_node if child_key not in node else node[child_key]
         cmap = merge_maps(cmap, child_map, prefix=(child_key,))
@@ -100,5 +124,5 @@ def load_directory_node(
             del node[k]
             cmap.drop_prefix((k,))
 
-    logger.debug("Loaded node for %s with keys: %s", directory, list(node.keys()))
+    log.debug("Loaded node for %s with keys: %s", directory, list(node.keys()))
     return node, cmap

@@ -1,16 +1,20 @@
-
 from __future__ import annotations
+
+import json
+import time
 from pathlib import Path
-import json, time
+
 from data_cascade import make_cascade
+
 
 def setup_tree(tmp_path: Path) -> Path:
     root = tmp_path / "data"
     root.mkdir()
     (root / "__main__.yaml").write_text("name: Alpha\n", encoding="utf-8")
     (root / "team.yaml").write_text("members:\n  - Alice\n  - Bob\n", encoding="utf-8")
-    (root / "numbers.json").write_text(json.dumps([1,2,3]), encoding="utf-8")
+    (root / "numbers.json").write_text(json.dumps([1, 2, 3]), encoding="utf-8")
     return root
+
 
 def test_proxy_and_dirty_save(tmp_path: Path):
     root = setup_tree(tmp_path)

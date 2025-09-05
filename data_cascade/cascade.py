@@ -1,16 +1,20 @@
-
 """Interactive Cascade object with path and proxy APIs and dirty saves."""
 
 from __future__ import annotations
-from pathlib import Path
-from typing import Any, Iterable, Optional, Set, Tuple
-from .loader import load_data_cascade
-from .saver import save_data_cascade, _pick_default_write_path  # reuse internal
-from .mapping import CascadeMap, KeyPath
-from .pathops import parse_path, get_at as _get_at, set_at as _set_at
-from .logging_utils import get_logger
 
-logger = get_logger("cascade_obj")
+from pathlib import Path
+from typing import Any, Set
+
+from .loader import load_data_cascade
+from .logging_utils import get_logger
+from .mapping import CascadeMap, KeyPath
+from .pathops import get_at as _get_at
+from .pathops import parse_path
+from .pathops import set_at as _set_at
+from .saver import _pick_default_write_path  # reuse internal
+from .saver import save_data_cascade
+
+log = get_logger(__name__)
 
 
 class CascadeNode:
@@ -77,14 +81,18 @@ class Cascade:
         self.set(kp, None)
 
     def node(self, path: str | KeyPath = ()) -> CascadeNode:
-        kp: KeyPath = parse_path(path) if isinstance(path, str) else (path if path else tuple())
+        kp: KeyPath = (
+            parse_path(path) if isinstance(path, str) else (path if path else tuple())
+        )
         return CascadeNode(self, kp)
 
     def save(self) -> None:
         if not self._dirty_files:
-            logger.info("No dirty files to save.")
+            log.info("No dirty files to save.")
             return
-        save_data_cascade(self.root, self.data, self.cmap, target_files=self._dirty_files)
+        save_data_cascade(
+            self.root, self.data, self.cmap, target_files=self._dirty_files
+        )
         self._dirty_files.clear()
 
 
