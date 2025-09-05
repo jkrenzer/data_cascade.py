@@ -1,0 +1,25 @@
+{
+    "name": "Python Environment",
+    "build": {
+        "dockerfile": "../../.docker/python-env.Dockerfile",
+        "context": "../..",
+        "args": {
+            "WORKSPACE": "${containerWorkspaceFolder}"
+        }
+    },
+    "postCreateCommand": "pre-commit install",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.venvPath": "${VIRTUAL_ENV}"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.isort",
+                "mikoz.autoflake-extension",
+                "ms-python.black-formatter",
+                "ms-python.pylint"
+            ]
+        }
+    }
+}

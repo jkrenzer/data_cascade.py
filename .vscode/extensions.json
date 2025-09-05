@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "ms-python.isort",
+        "mikoz.autoflake-extension",
+        "ms-python.black-formatter",
+        "ms-python.pylint"
+    ]
+}

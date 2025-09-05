@@ -1,0 +1,92 @@
+[tool.poetry]
+name = "data-cascade"
+version = "0.1.0"
+description = "Composable directory-based data cascade loader/saver with per-file origins and a convenient path/proxy API."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "data_cascade" }]
+license = "MIT"
+homepage = "https://example.com/data-cascade"
+repository = "https://example.com/data-cascade"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+# All handlers are optional at runtime; the package falls back when missing.
+# Users can choose one or more according to their needs.
+PyYAML = { version = "^6.0", optional = true }
+ruamel-yaml = { version = "^0.18.0", optional = true }
+tomli = { version = "^2.0.1", python = "<3.11", optional = true }
+tomli-w = { version = "^1.0.0", optional = true }
+toml = { version = "^0.10.2", optional = true }
+
+[tool.poetry.extras]
+yaml = ["PyYAML", "ruamel-yaml"]
+toml = ["tomli", "tomli-w", "toml"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+poethepoet = "^0.26.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+ruamel-yaml = "^0.18.15"
+autoflake = "^2.3.1"
+bump-my-version = "^1.2.1"
+pre-commit = "^4.3.0"
+pylint = "^3.3.8"
+
+[tool.poe.tasks]
+test = "pytest -q"
+pack = "poetry build"
+lint = "pylint --fail-under=7 data_cascade tests"
+
+[tool.poe.tasks.format-code]
+help = "Run all linters (black, isort, autoflake)."
+shell = "black ./ && isort ./ && autoflake -i -r ./"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["data_cascade"]
+
+[tool.autoflake]
+
+[tool.bumpversion]
+current_version = "0.1.0"
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:
+        -                             # dash separator for pre-release section
+        (?P<pre_l>[a-zA-Z-]+)         # pre-release label
+        (?:0|[1-9]\\d*)               # pre-release version number
+    )?                                # pre-release section is optional
+"""
+serialize = [
+    "{major}.{minor}.{patch}-{pre_l}{distance_to_latest_tag}",
+    "{major}.{minor}.{patch}",
+]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "chore(release): Bump version: {current_version} → {new_version}"
+commit_args = ""
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
