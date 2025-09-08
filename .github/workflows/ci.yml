@@ -59,6 +59,8 @@ jobs:
             TAG=$(git tag --points-at "$GITHUB_SHA" | grep -E '^v' | head -n1 || true)
             if [ -z "$TAG" ]; then
               echo "No tag pointing at $GITHUB_SHA; nothing to publish. Exiting job."
+              # make sure we emit an empty version output so downstream steps can check it
+              echo "version=" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           fi
@@ -89,9 +91,11 @@ jobs:
         run: poetry install --with dev
 
       - name: Build package
+        if: ${{ steps.validate_tag.outputs.version != '' }}
         run: poetry build
 
       - name: Publish to PyPI
+        if: ${{ steps.validate_tag.outputs.version != '' }}
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
         run: |
@@ -99,6 +103,7 @@ jobs:
           poetry publish --no-interaction --build
 
       - name: Create GitHub Release
+        if: ${{ steps.validate_tag.outputs.version != '' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.validate_tag.outputs.version }}
