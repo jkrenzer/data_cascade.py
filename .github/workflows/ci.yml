@@ -65,7 +65,7 @@ jobs:
           echo "Found tag: $TAG"
 
           # Basic SemVer check allowing prerelease/build metadata:
-          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-ZaZ.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
             echo "ERROR: Tag '$TAG' is not a valid SemVer prefixed with 'v' (e.g. v1.2.3)"
             exit 1
           fi
