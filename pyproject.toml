@@ -80,7 +80,10 @@ tag_name = "v{new_version}"
 tag_message = "Bump version: {current_version} → {new_version}"
 allow_dirty = false
 commit = true
-message = "chore(release): Bump version: {current_version} → {new_version}"
+message = """chore(release): Bump version: {current_version} → {new_version}
+
+Increment version for new package release.
+"""
 commit_args = ""
 
 [[tool.bumpversion.files]]
