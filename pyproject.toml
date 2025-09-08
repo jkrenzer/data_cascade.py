@@ -83,6 +83,11 @@ commit = true
 message = "chore(release): Bump version: {current_version} → {new_version}"
 commit_args = ""
 
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = "{current_version}"
+replace = "{new_version}"
+
 [tool.bumpversion.parts.pre_l]
 values = ["dev", "rc", "final"]
 optional_value = "final"
