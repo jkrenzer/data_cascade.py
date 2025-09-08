@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "data-cascade"
-version = "0.1.1-dev2"
+version = "0.1.1-dev3"
 description = "Composable directory-based data cascade loader/saver with per-file origins and a convenient path/proxy API."
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
@@ -55,7 +55,7 @@ known_first_party = ["data_cascade"]
 [tool.autoflake]
 
 [tool.bumpversion]
-current_version = "0.1.1-dev2"
+current_version = "0.1.1-dev3"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
