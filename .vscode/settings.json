@@ -1,6 +1,7 @@
 {
     "git.followTagsWhenSync": true,
     "conventionalCommits.scopes": [
-        "infra"
+        "infra",
+        "cascade"
     ]
 }

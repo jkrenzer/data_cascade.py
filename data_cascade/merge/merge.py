@@ -2,23 +2,25 @@
 
 from __future__ import annotations
 
+from math import log
 from typing import Any, Dict, Mapping, MutableMapping
 
+from data_cascade.logging_utils import get_logger
 from data_cascade.merge.strategy import DictMode, ListMode, ListStrategy, MergeStrategy
+
+log = get_logger(__name__)
 
 
 def merge_lists(a: list[Any], b: list[Any], strategy: ListStrategy) -> list[Any]:
     mode = strategy.mode
+    log.debug("Merging lists with mode %s: %s + %s", mode, a, b)
     if mode == ListMode.REPLACE:
         return list(b)
     if mode == ListMode.EXTEND:
         return list(a) + list(b)
     if mode == ListMode.UNIQUE:
-        out: list[Any] = []
-        for item in list(a) + list(b):
-            if item not in out:
-                out.append(item)
-        return out
+        out_set: set = set(a) + set(b)
+        return list(out_set)
     if mode == ListMode.MERGE_BY_KEY:
         key = strategy.key
         if not key:
@@ -53,12 +55,14 @@ def merge_lists(a: list[Any], b: list[Any], strategy: ListStrategy) -> list[Any]
 
 def merge_values(a: Any, b: Any, strategy: MergeStrategy) -> Any:
     if isinstance(a, Mapping) and isinstance(b, Mapping):
+        log.debug("Merging dicts with strategy: %s", strategy.dict_mode)
         if strategy.dict_mode == DictMode.FIRST_WINS:
             return dict(a)
         if strategy.dict_mode == DictMode.OVERRIDE:
             return dict(b)
         return deep_merge_dicts(dict(a), dict(b), strategy)
     if isinstance(a, list) and isinstance(b, list):
+        log.debug("Merging lists with strategy: %s", strategy.list_strategy)
         return merge_lists(a, b, strategy.list_strategy)
     if strategy.dict_mode == DictMode.FIRST_WINS:
         return a
