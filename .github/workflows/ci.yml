@@ -100,7 +100,7 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
         run: |
           # configure poetry auth and publish
-          poetry publish --no-interaction --build
+          poetry publish --no-interaction
 
       - name: Create GitHub Release
         if: ${{ steps.validate_tag.outputs.version != '' }}
