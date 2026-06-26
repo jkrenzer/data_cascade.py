@@ -147,6 +147,36 @@ def test_no_content_drift_after_repeated_load_save_reload(tmp_path: Path) -> Non
     assert data_final["team"] == {"members": ["Alice", "Bob"]}
 
 
+def test_empty_sibling_container_does_not_copy_sibling_owned_leaves(
+    tmp_path: Path,
+) -> None:
+    """An empty db.yaml (container-path origin only) must not absorb db.host from __main__."""
+    root = tmp_path / "data"
+    root.mkdir()
+    # db.yaml is empty — it registers ("db",) as a container origin with local_path=()
+    # but owns NO descendant key paths of its own.
+    (root / "db.yaml").write_text("{}\n", encoding="utf-8")
+    # __main__.yaml defines db.host — it owns the ("db", "host") leaf.
+    (root / "__main__.yaml").write_text("db:\n  host: localhost\n", encoding="utf-8")
+
+    data, cmap = load_data_cascade(root)
+    assert data.get("db", {}).get("host") == "localhost"
+
+    save_data_cascade(root, data, cmap)
+
+    raw_db = _load_yaml(root / "db.yaml")
+    # db.yaml must remain empty — it must not absorb "host" from __main__.yaml
+    assert (
+        raw_db == {} or raw_db is None or raw_db == {}
+    ), f"db.yaml must not contain sibling-owned keys, got: {raw_db}"
+    assert "host" not in (
+        raw_db or {}
+    ), f"db.yaml must not copy __main__-owned 'host', got: {raw_db}"
+
+    raw_main = _load_yaml(root / "__main__.yaml")
+    assert raw_main.get("db", {}).get("host") == "localhost"
+
+
 def test_new_key_added_to_data_goes_to_main(tmp_path: Path) -> None:
     """A brand-new key with no prior origin must be routed to __main__ on save."""
     root = tmp_path / "data"
