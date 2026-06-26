@@ -93,8 +93,21 @@ def _choose_origin_for_key(file: Path, origins: List[KeyOrigin]) -> KeyOrigin:
 
 
 def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap) -> Any:
+    # Precompute which key paths have at least one strict descendant anywhere in
+    # cmap.reverse, so the container-origin check below is O(1) per path rather
+    # than O(N) (scanning all of cmap.reverse for every container path).
+    all_reverse = set(cmap.reverse)
+    has_descendant: set = set()
+    for kp in all_reverse:
+        for length in range(len(kp)):
+            prefix = kp[:length]
+            if prefix in all_reverse:
+                has_descendant.add(prefix)
+
     root_obj: Any = None
-    key_paths = sorted(list(cmap.forward.get(file, set())), key=lambda kp: len(kp))
+    key_paths = sorted(
+        list(cmap.forward.get(file, set())), key=lambda kp: (len(kp), kp)
+    )
     for kp in key_paths:
         origins = cmap.reverse.get(kp, [])
         if not origins:
@@ -106,6 +119,13 @@ def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap)
         if val is sentinel:
             continue
         if local == tuple():
+            # If any descendant path exists (in this file OR in a sibling file),
+            # reconstruct from owned descendants to avoid writing sibling-owned
+            # data into this container.
+            if kp and kp in has_descendant:
+                if root_obj is None:
+                    root_obj = [] if isinstance(val, list) else {}
+                continue
             root_obj = val
             continue
         if root_obj is None:
