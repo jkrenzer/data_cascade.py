@@ -67,6 +67,11 @@ def load_directory_node(
             {"__config__": dir_default_config}, strategy
         )
 
+    # Sibling-file origin assignments happen in the main loop below.
+    # __main__ origin assignments are deferred until after siblings so that
+    # sibling files always win ownership of their key paths.
+    main_files_for_origin: list[tuple[Path, Any]] = []
+
     for file_path in files_to_process:
         log.debug("Processing file %s", file_path)
         stem = file_path.stem
@@ -96,7 +101,7 @@ def load_directory_node(
                     f"{file_path} must contain a mapping for {MAIN_STEM}"
                 )
             node = deep_merge_dicts(node, content, strategy)
-            _assign_origins_for_subtree((), content, file_path, cmap)
+            main_files_for_origin.append((file_path, content))
             continue
         if stem in node:
             if isinstance(node[stem], dict) and isinstance(content, dict):
@@ -120,6 +125,18 @@ def load_directory_node(
             node[stem] = content if stem not in node else node[stem]
         base = (stem,)
         _assign_origins_for_subtree(base, content, file_path, cmap)
+
+    # Assign __main__ origins after all sibling files have claimed their paths.
+    # 1. Skip () — prevents _reconstruct_file_object from writing entire cascade to __main__.
+    # 2. Skip already-owned paths — prevents duplicate writes to both __main__ and sibling.
+    for file_path, content in main_files_for_origin:
+        for rel_path in enumerate_paths(content):
+            if not rel_path:
+                continue  # skip () root-container path
+            if rel_path not in cmap.reverse:
+                cmap.add_origin(
+                    rel_path, KeyOrigin(file=file_path, local_path=rel_path)
+                )
 
     strategy = extract_strategy_from_node(node, strategy)
 
