@@ -108,10 +108,11 @@ def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap)
         if val is sentinel:
             continue
         if local == tuple():
-            # If this key has more specific descendants in this file, reconstruct from them
-            # to avoid copying sibling-owned data from the merged cascade.
+            # If any descendant path exists (in this file OR in a sibling file),
+            # reconstruct from owned descendants to avoid writing sibling-owned
+            # data into this container.
             if kp and any(
-                other != kp and other[: len(kp)] == kp for other in key_paths
+                other != kp and other[: len(kp)] == kp for other in cmap.reverse
             ):
                 if root_obj is None:
                     root_obj = [] if isinstance(val, list) else {}
