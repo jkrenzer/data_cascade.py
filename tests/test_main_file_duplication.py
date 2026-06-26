@@ -102,15 +102,15 @@ def test_dirty_tracking_modifying_sibling_does_not_touch_main(tmp_path: Path) ->
     c = make_cascade(root)
     main_yaml = root / "__main__.yaml"
     req_yaml = root / "requirements.yaml"
-    t0_main = main_yaml.stat().st_mtime
-    t0_req = req_yaml.stat().st_mtime
-    time.sleep(0.1)  # ensure mtime changes
+    t0_main = main_yaml.stat().st_mtime_ns
+    t0_req = req_yaml.stat().st_mtime_ns
+    time.sleep(1.05)  # cross 1-second boundary for coarse-resolution filesystems
 
     c.node("requirements").packages.set(["numpy", "scipy"])
     c.save()
 
-    assert main_yaml.stat().st_mtime == t0_main, "__main__.yaml must not be touched"
-    assert req_yaml.stat().st_mtime > t0_req, "requirements.yaml must be updated"
+    assert main_yaml.stat().st_mtime_ns == t0_main, "__main__.yaml must not be touched"
+    assert req_yaml.stat().st_mtime_ns > t0_req, "requirements.yaml must be updated"
     assert "scipy" in req_yaml.read_text(encoding="utf-8")
 
     raw_main = _load_yaml(main_yaml)
