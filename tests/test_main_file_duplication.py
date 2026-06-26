@@ -6,14 +6,12 @@ import time
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from data_cascade import load_data_cascade, make_cascade, save_data_cascade
+from data_cascade.io import load_file
 
 
 def _load_yaml(path: Path) -> Any:
-    with path.open(encoding="utf-8") as fh:
-        return yaml.safe_load(fh) or {}
+    return load_file(path) or {}
 
 
 def test_full_save_does_not_write_sibling_keys_into_main(tmp_path: Path) -> None:
