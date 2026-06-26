@@ -94,7 +94,9 @@ def _choose_origin_for_key(file: Path, origins: List[KeyOrigin]) -> KeyOrigin:
 
 def _reconstruct_file_object(file: Path, data: Dict[str, Any], cmap: CascadeMap) -> Any:
     root_obj: Any = None
-    key_paths = sorted(list(cmap.forward.get(file, set())), key=lambda kp: len(kp))
+    key_paths = sorted(
+        list(cmap.forward.get(file, set())), key=lambda kp: (len(kp), kp)
+    )
     for kp in key_paths:
         origins = cmap.reverse.get(kp, [])
         if not origins:
