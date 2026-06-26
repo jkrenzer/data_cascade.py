@@ -104,7 +104,7 @@ def test_dirty_tracking_modifying_sibling_does_not_touch_main(tmp_path: Path) ->
     req_yaml = root / "requirements.yaml"
     t0_main = main_yaml.stat().st_mtime
     t0_req = req_yaml.stat().st_mtime
-    time.sleep(0.05)
+    time.sleep(0.1)  # ensure mtime changes
 
     c.node("requirements").packages.set(["numpy", "scipy"])
     c.save()
