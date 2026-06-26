@@ -165,13 +165,7 @@ def test_empty_sibling_container_does_not_copy_sibling_owned_leaves(
     save_data_cascade(root, data, cmap)
 
     raw_db = _load_yaml(root / "db.yaml")
-    # db.yaml must remain empty — it must not absorb "host" from __main__.yaml
-    assert (
-        raw_db == {} or raw_db is None or raw_db == {}
-    ), f"db.yaml must not contain sibling-owned keys, got: {raw_db}"
-    assert "host" not in (
-        raw_db or {}
-    ), f"db.yaml must not copy __main__-owned 'host', got: {raw_db}"
+    assert raw_db == {}, f"db.yaml must not contain sibling-owned keys, got: {raw_db}"
 
     raw_main = _load_yaml(root / "__main__.yaml")
     assert raw_main.get("db", {}).get("host") == "localhost"
